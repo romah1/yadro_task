@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.25)
-project(tape)
-
+cmake_minimum_required (VERSION 3.25)
 set(CMAKE_CXX_STANDARD 17)
-
-add_executable(tape main.cpp tape.h tape_impl.cpp tape_impl.h)
+project (TAPE)
+add_subdirectory (src)
+enable_testing ()
+add_subdirectory (test)
+add_test (NAME MyTest COMMAND Test)

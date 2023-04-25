@@ -12,7 +12,11 @@ public:
 
     virtual void right() = 0;
 
-    virtual T read() = 0;
+    virtual bool has_left() = 0;
+
+    virtual bool has_right() = 0;
+
+    virtual T value() = 0;
 };
 
 #endif //TAPE_TAPE_H
