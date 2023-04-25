@@ -49,8 +49,4 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
         }
     }
 
-    BOOST_AUTO_TEST_CASE(PassTest) {
-        BOOST_ASSERT(true);
-    }
-
 BOOST_AUTO_TEST_SUITE_END();
