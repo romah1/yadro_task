@@ -17,6 +17,8 @@ public:
     virtual bool has_right() = 0;
 
     virtual T value() = 0;
+
+    virtual void write(T value) = 0;
 };
 
 #endif //TAPE_TAPE_H

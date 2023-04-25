@@ -13,7 +13,7 @@
 
 class TapeImpl : public Tape<int> {
 public:
-    explicit TapeImpl(const std::string &fileName);
+    explicit TapeImpl(const std::string &file_name);
 
     void left() override;
 
@@ -25,23 +25,24 @@ public:
 
     int value() override;
 
+    void write(int value) override;
+
 private:
     std::fstream fin_;
     std::optional<int> cur_value;
-
-    void left_();
+    std::string file_name_;
 
     void move_one_char_left();
 
-    void skip_whitespace_left();
+    void unread_delim();
 
-    void skip_not_whitespace_left();
-
-    void skip_number_left();
-
-    void right_();
+    void unread();
 
     int read();
+
+    void read_delim();
+
+    static const char delim = ',';
 };
 
 #endif //TAPE_TAPE_IMPL_H
