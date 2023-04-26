@@ -6,7 +6,7 @@
 #define TAPE_TAPE_H
 
 template<typename T>
-class Tape {
+class tape {
 public:
     virtual void left() = 0;
 

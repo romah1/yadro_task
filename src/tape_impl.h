@@ -12,7 +12,7 @@
 
 #include "tape.h"
 
-class tape_impl : public Tape<int> {
+class tape_impl : public tape<int> {
 public:
     struct configuration {
         std::chrono::seconds read_delay;
