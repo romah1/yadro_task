@@ -22,6 +22,7 @@ tape_impl::tape_impl(const std::string &file_name, configuration conf)
 
 // Tape
 void tape_impl::left() {
+    std::this_thread::sleep_for(configuration_.move_delay);
     unread_delim();
     unread();
     if (fin_.tellp() == 0) {
@@ -66,6 +67,7 @@ void tape_impl::unread() {
 }
 
 void tape_impl::right() {
+    std::this_thread::sleep_for(configuration_.move_delay);
     if (!has_right()) {
         throw tape_exception("trying to move tape at max pos to the right");
     }
@@ -91,12 +93,14 @@ int tape_impl::value() {
 }
 
 int tape_impl::read() {
+    std::this_thread::sleep_for(configuration_.read_delay);
     int new_value;
     fin_ >> new_value;
     return new_value;
 }
 
 void tape_impl::write(int value) {
+    std::this_thread::sleep_for(configuration_.write_delay);
     unread_delim();
     unread();
     auto tmp_file = std::tmpfile();
