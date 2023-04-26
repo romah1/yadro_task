@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <vector>
 
 #include "tape_impl.h"
 #include "tape_exception.h"
@@ -13,11 +14,25 @@ tape_impl::tape_impl(const std::string &file_name) : tape_impl(
         configuration({}, {}, {})) {}
 
 tape_impl::tape_impl(const std::string &file_name, configuration conf)
-        : fin_(file_name, std::fstream::in | std::fstream::out),
-          file_name_(file_name),
-          configuration_(conf) {
-    cur_value = std::make_optional(read());
-    read_delim();
+        : tape_impl({}, file_name, conf) {}
+
+tape_impl::tape_impl(const std::vector<int> &elems, const std::string &file_name, configuration conf)
+    : file_name_(file_name),
+      configuration_(conf) {
+    std::fstream touch(file_name_, std::fstream::app);
+    touch.close();
+    fin_ = std::fstream(file_name, std::fstream::in | std::fstream::out);
+    if (!fin_.is_open()) {
+        auto msg = new std::string("failed to open file ");
+        *msg += file_name_;
+        throw tape_exception(msg->c_str());
+    }
+    for (auto e : elems) {
+        fin_ << e << ',';
+    }
+    fin_.clear();
+    fin_.seekg(0, std::iostream::beg);
+    fin_.seekp(0, std::iostream::beg);
 }
 
 // Tape
@@ -67,12 +82,21 @@ void tape_impl::unread() {
 }
 
 void tape_impl::right() {
+    right_();
+}
+
+void tape_impl::right_() {
     std::this_thread::sleep_for(configuration_.move_delay);
     if (!has_right()) {
         throw tape_exception("trying to move tape at max pos to the right");
     }
     cur_value = std::make_optional(read());
     read_delim();
+}
+
+void tape_impl::append_right(int value) {
+    fin_ << value << ',';
+    cur_value = std::make_optional(value);
 }
 
 bool tape_impl::has_right() {

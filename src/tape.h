@@ -19,6 +19,8 @@ public:
     virtual T value() = 0;
 
     virtual void write(T value) = 0;
+
+    virtual ~tape() = default;
 };
 
 #endif //TAPE_TAPE_H

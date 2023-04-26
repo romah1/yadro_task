@@ -28,6 +28,8 @@ public:
 
     explicit tape_impl(const std::string &file_name);
 
+    tape_impl(const std::vector<int> &elems, const std::string &file_name, configuration conf);
+
     tape_impl(const std::string &file_name, configuration conf);
 
     void left() override;
@@ -41,6 +43,8 @@ public:
     int value() override;
 
     void write(int value) override;
+
+    void append_right(int value);
 
 private:
     std::fstream fin_;
@@ -57,6 +61,8 @@ private:
     int read();
 
     void read_delim();
+
+    void right_();
 
     static const char delim = ',';
 };
