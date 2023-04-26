@@ -8,7 +8,12 @@
 #include "tape_sorter.h"
 
 class tape_sorter_impl : public tape_sorter<int> {
+public:
+    explicit tape_sorter_impl(unsigned int batch_size);
     const tape<int>& sort(const tape<int> &t) override;
+
+private:
+    unsigned int batch_size_;
 };
 
 
