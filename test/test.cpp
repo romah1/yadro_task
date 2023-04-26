@@ -16,7 +16,7 @@ const std::string input_filename = "input.in";
 
 struct tape_fixture {
     std::vector<int> input = {-10, 5, -3, 0, 3, 5, 10};
-    TapeImpl* tape;
+    tape_impl* tape;
 
     tape_fixture() {
         auto rng = std::default_random_engine{};
@@ -26,7 +26,7 @@ struct tape_fixture {
             out << v << ',';
         }
         out.close();
-        tape = new TapeImpl(input_filename);
+        tape = new tape_impl(input_filename);
     }
 };
 

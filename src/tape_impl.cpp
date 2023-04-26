@@ -5,49 +5,50 @@
 #include <iostream>
 
 #include "tape_impl.h"
+#include "tape_exception.h"
 
-TapeImpl::TapeImpl(const std::string &file_name)
+tape_impl::tape_impl(const std::string &file_name)
         : fin_(file_name, std::fstream::in | std::fstream::out), file_name_(file_name) {
     cur_value = std::make_optional(read());
     read_delim();
 }
 
 // Tape
-void TapeImpl::left() {
+void tape_impl::left() {
     unread_delim();
     unread();
     if (fin_.tellp() == 0) {
-        throw std::out_of_range("trying to move tape at pos 0 to the left");
+        throw tape_exception("trying to move tape at pos 0 to the left");
     }
     unread_delim();
     unread();
     right();
 }
 
-void TapeImpl::read_delim() {
+void tape_impl::read_delim() {
     char c;
     fin_ >> c;
     if (c != delim) {
-        throw std::out_of_range("delim char expected to read");
+        throw tape_exception("delim char expected to read");
     }
 }
 
-void TapeImpl::move_one_char_left() {
+void tape_impl::move_one_char_left() {
     if (fin_.eof()) {
         fin_.clear(std::iostream::goodbit);
     }
     fin_.seekp(-1, std::ios_base::cur);
 }
 
-void TapeImpl::unread_delim() {
+void tape_impl::unread_delim() {
     move_one_char_left();
     if (fin_.peek() != delim) {
         std::cout << fin_.peek() - '0' << '\n';
-        throw std::out_of_range("delim char expected to unread");
+        throw tape_exception("delim char expected to unread");
     }
 }
 
-void TapeImpl::unread() {
+void tape_impl::unread() {
     move_one_char_left();
     while (fin_.peek() != delim && fin_.tellp() != 0) {
         move_one_char_left();
@@ -57,19 +58,19 @@ void TapeImpl::unread() {
     }
 }
 
-void TapeImpl::right() {
+void tape_impl::right() {
     if (!has_right()) {
-        throw std::out_of_range("trying to move tape at max pos to the right");
+        throw tape_exception("trying to move tape at max pos to the right");
     }
     cur_value = std::make_optional(read());
     read_delim();
 }
 
-bool TapeImpl::has_right() {
+bool tape_impl::has_right() {
     return fin_.peek() != EOF;
 }
 
-bool TapeImpl::has_left() {
+bool tape_impl::has_left() {
     unread_delim();
     unread();
     bool has_left_ = fin_.tellp() != 0;
@@ -78,17 +79,17 @@ bool TapeImpl::has_left() {
     return has_left_;
 }
 
-int TapeImpl::value() {
+int tape_impl::value() {
     return cur_value.value();
 }
 
-int TapeImpl::read() {
+int tape_impl::read() {
     int new_value;
     fin_ >> new_value;
     return new_value;
 }
 
-void TapeImpl::write(int value) {
+void tape_impl::write(int value) {
     unread_delim();
     unread();
     auto tmp_file = std::tmpfile();

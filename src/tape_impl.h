@@ -11,9 +11,9 @@
 
 #include "tape.h"
 
-class TapeImpl : public Tape<int> {
+class tape_impl : public Tape<int> {
 public:
-    explicit TapeImpl(const std::string &file_name);
+    explicit tape_impl(const std::string &file_name);
 
     void left() override;
 
