@@ -3,12 +3,19 @@
 //
 
 #include <iostream>
+#include <thread>
 
 #include "tape_impl.h"
 #include "tape_exception.h"
 
-tape_impl::tape_impl(const std::string &file_name)
-        : fin_(file_name, std::fstream::in | std::fstream::out), file_name_(file_name) {
+tape_impl::tape_impl(const std::string &file_name) : tape_impl(
+        file_name,
+        configuration({}, {}, {})) {}
+
+tape_impl::tape_impl(const std::string &file_name, configuration conf)
+        : fin_(file_name, std::fstream::in | std::fstream::out),
+          file_name_(file_name),
+          configuration_(conf) {
     cur_value = std::make_optional(read());
     read_delim();
 }

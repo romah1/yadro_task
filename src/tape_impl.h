@@ -8,12 +8,27 @@
 #include <string>
 #include <fstream>
 #include <optional>
+#include <chrono>
 
 #include "tape.h"
 
 class tape_impl : public Tape<int> {
 public:
+    struct configuration {
+        std::chrono::seconds read_delay;
+        std::chrono::seconds write_delay;
+        std::chrono::seconds move_delay;
+
+        configuration(
+                std::chrono::seconds read_delay,
+                std::chrono::seconds write_delay,
+                std::chrono::seconds move_delay
+        ) : read_delay(read_delay), write_delay(write_delay), move_delay(move_delay) {}
+    };
+
     explicit tape_impl(const std::string &file_name);
+
+    tape_impl(const std::string &file_name, configuration conf);
 
     void left() override;
 
@@ -31,6 +46,7 @@ private:
     std::fstream fin_;
     std::optional<int> cur_value;
     std::string file_name_;
+    configuration configuration_;
 
     void move_one_char_left();
 
