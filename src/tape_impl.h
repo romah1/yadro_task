@@ -40,11 +40,17 @@ public:
 
     bool has_left() override;
 
+    bool ended() override;
+
     int value() override;
 
     void write(int value) override;
 
     void append_right(int value);
+
+    void rewind();
+
+    void clean();
 
 private:
     std::fstream fin_;

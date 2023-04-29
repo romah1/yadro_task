@@ -5,21 +5,19 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <stdio.h>
 
 #include "tape_impl.h"
 #include "tape_exception.h"
 
 tape_impl::tape_impl(const std::string &file_name) : tape_impl(
         file_name,
-        configuration({}, {}, {})) {}
+        configuration({}, {}, {})
+) {}
 
 tape_impl::tape_impl(const std::string &file_name, configuration conf)
-        : tape_impl({}, file_name, conf) {}
-
-tape_impl::tape_impl(const std::vector<int> &elems, const std::string &file_name, configuration conf)
-    : file_name_(file_name),
-      configuration_(conf) {
-    std::fstream touch(file_name_, std::fstream::app);
+        : configuration_(conf) {
+    std::fstream touch(file_name_, std::fstream::app | std::fstream::out);
     touch.close();
     fin_ = std::fstream(file_name, std::fstream::in | std::fstream::out);
     if (!fin_.is_open()) {
@@ -27,12 +25,28 @@ tape_impl::tape_impl(const std::vector<int> &elems, const std::string &file_name
         *msg += file_name_;
         throw tape_exception(msg->c_str());
     }
-    for (auto e : elems) {
+    right_();
+}
+
+tape_impl::tape_impl(const std::vector<int> &elems, const std::string &file_name, configuration conf)
+        : file_name_(file_name),
+          configuration_(conf) {
+    std::ofstream touch(file_name_);
+    touch.close();
+    fin_ = std::fstream(file_name, std::fstream::in | std::fstream::out);
+    if (!fin_.is_open()) {
+        auto msg = new std::string("failed to open file ");
+        *msg += file_name_;
+        throw tape_exception(msg->c_str());
+    }
+    for (auto e: elems) {
         fin_ << e << ',';
     }
-    fin_.clear();
-    fin_.seekg(0, std::iostream::beg);
-    fin_.seekp(0, std::iostream::beg);
+    fin_.flush();
+    rewind();
+    if (!elems.empty()) {
+        right_();
+    }
 }
 
 // Tape
@@ -87,8 +101,13 @@ void tape_impl::right() {
 
 void tape_impl::right_() {
     std::this_thread::sleep_for(configuration_.move_delay);
-    if (!has_right()) {
+    if (ended()) {
         throw tape_exception("trying to move tape at max pos to the right");
+    }
+    if (!has_right()) {
+//        throw tape_exception("trying to move tape at max pos to the right");
+        fin_.get();
+        return;
     }
     cur_value = std::make_optional(read());
     read_delim();
@@ -96,11 +115,16 @@ void tape_impl::right_() {
 
 void tape_impl::append_right(int value) {
     fin_ << value << ',';
+    fin_.flush();
     cur_value = std::make_optional(value);
 }
 
 bool tape_impl::has_right() {
     return fin_.peek() != EOF;
+}
+
+bool tape_impl::ended() {
+    return fin_.eof();
 }
 
 bool tape_impl::has_left() {
@@ -176,4 +200,15 @@ void tape_impl::write(int value) {
     }
 
     cur_value = std::make_optional(value);
+}
+
+void tape_impl::rewind() {
+    fin_.clear();
+    fin_.seekg(0, std::iostream::beg);
+    fin_.seekp(0, std::iostream::beg);
+}
+
+void tape_impl::clean() {
+    fin_.close();
+    std::remove(file_name_.c_str());
 }

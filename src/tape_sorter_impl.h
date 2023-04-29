@@ -7,25 +7,21 @@
 
 #include "tape_impl.h"
 #include "tape_sorter.h"
+#include "tape_factory.h"
 
 class tape_sorter_impl : public tape_sorter<int> {
 public:
-    explicit tape_sorter_impl(unsigned int batch_size, tape_impl::configuration tape_configuration);
+    explicit tape_sorter_impl(unsigned int batch_size, tape_impl::configuration conf);
 
-    tape<int> &sort(tape<int> &t) override;
+    tape<int> *sort(tape<int> *t) override;
 
-    tape_impl *merge(tape_impl &lhs, tape_impl &rhs);
+    tape_impl *merge(tape_impl *lhs, tape_impl *rhs);
+
+    std::vector<tape_impl *> *split(tape<int> *t);
 
 private:
     unsigned int batch_size_;
-    int tape_id_ = 0;
-    tape_impl::configuration tape_configuration_;
-
-    std::vector<tape_impl *> split(tape<int> &t);
-
-    int next_tape_id();
-
-    std::string next_tape_name();
+    tape_factory tape_factory_;
 };
 
 

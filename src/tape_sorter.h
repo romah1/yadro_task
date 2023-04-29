@@ -10,7 +10,7 @@
 template<typename T>
 class tape_sorter {
 public:
-    virtual tape<T>& sort(tape<T> &t) = 0;
+    virtual tape<T>* sort(tape<T> *t) = 0;
 };
 
 #endif //TAPE_TAPE_SORTER_H

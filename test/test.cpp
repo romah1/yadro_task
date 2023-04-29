@@ -16,29 +16,28 @@
 const std::string input_filename = "input.in";
 
 struct tape_fixture {
-    std::vector<int> input = {-10, 5, -3, 0, 3, 5, 10};
-    tape_impl* tape;
-    tape_sorter_impl* tape_sorter;
+    std::vector<int> input = {-10, -5, -3, 0, 3, 5, 10};
+    tape_impl *tape;
+    tape_sorter_impl *tape_sorter;
 
     tape_fixture() {
         auto rng = std::default_random_engine{};
+        tape_impl::configuration conf({}, {}, {});
         std::shuffle(input.begin(), input.end(), rng);
-        std::ofstream out(input_filename);
-        for (auto v: input) {
-            out << v << ',';
-        }
-        out.close();
-        tape = new tape_impl(input_filename);
-        tape->right();
+        tape = new tape_impl(input, input_filename, conf);
 
         tape_sorter = new tape_sorter_impl(2, tape_impl::configuration({}, {}, {}));
+    }
+
+    ~tape_fixture() {
+        tape->clean();
     }
 };
 
 BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
 
     BOOST_AUTO_TEST_CASE(TestTapeImplReadReturnsCorrectValue) {
-        for (auto v : input) {
+        for (auto v: input) {
             BOOST_CHECK_EQUAL(tape->value(), v);
             if (tape->has_right()) {
                 tape->right();
@@ -61,7 +60,7 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
             }
         }
 
-        for (int i = (int)input.size() - 1; i >= 0; --i) {
+        for (int i = (int) input.size() - 1; i >= 0; --i) {
             BOOST_CHECK_EQUAL(tape->value(), i);
             if (tape->has_left()) {
                 tape->left();
@@ -70,16 +69,48 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
     }
 
     BOOST_AUTO_TEST_CASE(TestTapeSorterImplMergesCorrectly) {
-        tape_impl tape1({1, 2, 3}, "test_merge_tape_1", tape_impl::configuration({}, {}, {}));
-        tape1.right();
-        tape_impl tape2({4, 5, 6}, "test_merge_tape_2", tape_impl::configuration({}, {}, {}));
-        tape2.right();
-        tape_sorter->merge(tape1, tape2);
-//        tape_sorter->sort(*tape);
+        tape_factory factory(tape_impl::configuration({}, {}, {}));
+        tape_impl tape1({1, 3, 5}, "test_merge_tape_1", tape_impl::configuration({}, {}, {}));
+        tape_impl tape2({2, 4, 6}, "test_merge_tape_2", tape_impl::configuration({}, {}, {}));
+
+        std::vector<int> expect = {1, 2};
+        auto out = tape_sorter->merge(&tape1, &tape2);
+
+        for (auto v: expect) {
+            BOOST_CHECK_EQUAL(out->value(), v);
+            out->right();
+        }
+        tape1.clean();
+        tape2.clean();
+        out->clean();
     }
 
-    BOOST_AUTO_TEST_CASE(TestTapeSorterImplSortsCorrectly) {
-        tape_sorter->sort(*tape);
+    BOOST_AUTO_TEST_CASE(TestTapeSorterSplitsCorrectly) {
+        std::vector<int> input = {1, 2, 3, 4, 5, 6};
+        tape_impl tape(
+                input,
+                "test_split_tape",
+                tape_impl::configuration({}, {}, {})
+        );
+        auto res = tape_sorter->split(&tape);
+        int i = 0;
+        for (auto r: *res) {
+            while (!r->ended()) {
+                BOOST_CHECK_EQUAL(r->value(), input[i++]);
+                r->right();
+            }
+            r->clean();
+        }
+        tape.clean();
+    }
+
+    BOOST_AUTO_TEST_CASE(TestTapeSorterSortsCorrectly) {
+        auto res = tape_sorter->sort(tape);
+        std::sort(input.begin(), input.end());
+        for (auto v: input) {
+            BOOST_CHECK_EQUAL(res->value(), v);
+            res->right();
+        }
     }
 
 BOOST_AUTO_TEST_SUITE_END();
