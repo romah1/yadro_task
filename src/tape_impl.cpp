@@ -5,15 +5,73 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 
 #include "tape_impl.h"
-#include "tape_exception.h"
+
+tape_impl::configuration::serialization_exception::serialization_exception(const char *msg)
+        : message_(msg) {}
+
+
+const char *tape_impl::configuration::serialization_exception::what() const noexcept {
+    return message_;
+}
+
+tape_impl::configuration::configuration(
+        std::chrono::seconds read_delay,
+        std::chrono::seconds write_delay,
+        std::chrono::seconds move_delay
+) : read_delay(read_delay), write_delay(write_delay), move_delay(move_delay) {}
+
+tape_impl::configuration::configuration() : read_delay({}), write_delay({}), move_delay({}) {}
 
 tape_impl::tape_impl(const std::string &file_name) : tape_impl(
         file_name,
         {}
 ) {}
+
+tape_impl::configuration tape_impl::configuration::from_file(const std::string &file_name) {
+    std::fstream in(file_name, std::fstream::in);
+    if (!in.is_open()) {
+        throw tape_impl::configuration::serialization_exception("failed to open file");
+    }
+
+    std::string param_name;
+    char eq_skip;
+    long long value;
+    std::chrono::seconds read_delay;
+    std::chrono::seconds write_delay;
+    std::chrono::seconds move_delay;
+
+    while (in >> param_name >> eq_skip >> value) {
+        if (param_name == READ_DELAY) {
+            read_delay = std::chrono::seconds(value);
+        } else if (param_name == WRITE_DELAY) {
+            write_delay = std::chrono::seconds(value);
+        } else if (param_name == MOVE_DELAY) {
+            move_delay = std::chrono::seconds(value);
+        } else {
+            throw tape_impl::configuration::serialization_exception("unexpected param_name");
+        }
+    }
+
+    return {read_delay, write_delay, move_delay};
+}
+
+void tape_impl::configuration::to_file(const std::string &file_name) {
+    std::fstream out(file_name, std::fstream::out);
+
+    out << READ_DELAY << " = " << this->read_delay.count() << std::endl;
+    out << WRITE_DELAY << " = " << this->write_delay.count() << std::endl;
+    out << MOVE_DELAY << " = " << this->move_delay.count() << std::endl;
+}
+
+tape_impl::tape_exception::tape_exception(const char *msg)
+        : message_(msg) {}
+
+const char *tape_impl::tape_exception::what() const noexcept {
+    return message_;
+}
 
 tape_impl::tape_impl(const std::string &file_name, configuration conf)
         : configuration_(conf) {

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <random>
 #include <vector>
+#include <cstdio>
 
 #include "tape_impl.h"
 #include "tape_sorter_impl.h"
@@ -127,6 +128,23 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
             res->right();
         }
         res->clean();
+    }
+
+    BOOST_AUTO_TEST_CASE(TestTapeImplConfigurationWriteReadFile) {
+        const char *file_name = "TestTapeImplConfigurationWriteReadFile";
+        auto write_conf = tape_impl::configuration(
+                std::chrono::seconds(1),
+                std::chrono::seconds(2),
+                std::chrono::seconds(3)
+        );
+        write_conf.to_file(file_name);
+        auto read_conf = tape_impl::configuration::from_file(file_name);
+
+        BOOST_CHECK_EQUAL(write_conf.read_delay.count(), read_conf.read_delay.count());
+        BOOST_CHECK_EQUAL(write_conf.write_delay.count(), read_conf.write_delay.count());
+        BOOST_CHECK_EQUAL(write_conf.move_delay.count(), read_conf.move_delay.count());
+
+        std::remove(file_name);
     }
 
 BOOST_AUTO_TEST_SUITE_END();

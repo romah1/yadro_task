@@ -14,7 +14,8 @@
 
 class tape_impl : public tape<int> {
 public:
-    struct configuration {
+    class configuration {
+    public:
         std::chrono::seconds read_delay;
         std::chrono::seconds write_delay;
         std::chrono::seconds move_delay;
@@ -23,9 +24,38 @@ public:
                 std::chrono::seconds read_delay,
                 std::chrono::seconds write_delay,
                 std::chrono::seconds move_delay
-        ) : read_delay(read_delay), write_delay(write_delay), move_delay(move_delay) {}
+        );
 
-        configuration() : read_delay({}), write_delay({}), move_delay({}) {}
+        configuration();
+
+        void to_file(const std::string &file_name);
+
+        static tape_impl::configuration from_file(const std::string &file_name);
+
+        class serialization_exception : public std::exception {
+        public:
+            explicit serialization_exception(const char *msg);
+
+            [[nodiscard]] const char *what() const noexcept override;
+
+        private:
+            const char *message_;
+        };
+
+    private:
+        constexpr static const char *READ_DELAY = "read_delay";
+        constexpr static const char *WRITE_DELAY = "write_delay";
+        constexpr static const char *MOVE_DELAY = "move_delay";
+    };
+
+    class tape_exception : public std::exception {
+    public:
+        explicit tape_exception(const char *msg);
+
+        [[nodiscard]] const char *what() const noexcept override;
+
+    private:
+        const char *message_;
     };
 
     explicit tape_impl(const std::string &file_name);
