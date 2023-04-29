@@ -13,7 +13,7 @@ tape_sorter_impl::tape_sorter_impl(
         tape_impl::configuration conf
 ) : batch_size_(batch_size), tape_factory_(conf) {}
 
-tape<int> *tape_sorter_impl::sort(tape<int> *t) {
+tape_impl *tape_sorter_impl::sort(tape<int> *t) {
     auto temp_tapes = split(t);
 
     while (temp_tapes->size() > 1) {
@@ -44,6 +44,9 @@ std::vector<tape_impl *> *tape_sorter_impl::split(tape<int> *t) {
             buf->push_back(t->value());
             if (!t->ended()) {
                 t->right();
+                if (t->ended()) {
+                    break;
+                }
             } else {
                 break;
             }

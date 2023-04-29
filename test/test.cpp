@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <random>
 #include <vector>
-#include <fstream>
 
 #include "tape_impl.h"
 #include "tape_sorter_impl.h"
@@ -19,14 +18,14 @@ struct tape_fixture {
     std::vector<int> input = {-10, -5, -3, 0, 3, 5, 10};
     tape_impl *tape;
     tape_sorter_impl *tape_sorter;
+    tape_factory *factory;
 
     tape_fixture() {
         auto rng = std::default_random_engine{};
-        tape_impl::configuration conf({}, {}, {});
         std::shuffle(input.begin(), input.end(), rng);
-        tape = new tape_impl(input, input_filename, conf);
-
-        tape_sorter = new tape_sorter_impl(2, tape_impl::configuration({}, {}, {}));
+        tape = new tape_impl(input, input_filename, {});
+        tape_sorter = new tape_sorter_impl(2, {});
+        factory = new tape_factory({});
     }
 
     ~tape_fixture() {
@@ -68,10 +67,25 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
         }
     }
 
+    BOOST_AUTO_TEST_CASE(TestTapeSorterImplMergesWithEmptyCorrectly) {
+        tape_impl tape1({1, 3, 5}, "test_merge_tape_1", {});
+        tape_impl tape2({}, "test_merge_tape_2", {});
+
+        std::vector<int> expect = {1, 3, 5};
+        auto out = tape_sorter->merge(&tape1, &tape2);
+
+        for (auto v: expect) {
+            BOOST_CHECK_EQUAL(out->value(), v);
+            out->right();
+        }
+        tape1.clean();
+        tape2.clean();
+        out->clean();
+    }
+
     BOOST_AUTO_TEST_CASE(TestTapeSorterImplMergesCorrectly) {
-        tape_factory factory(tape_impl::configuration({}, {}, {}));
-        tape_impl tape1({1, 3, 5}, "test_merge_tape_1", tape_impl::configuration({}, {}, {}));
-        tape_impl tape2({2, 4, 6}, "test_merge_tape_2", tape_impl::configuration({}, {}, {}));
+        tape_impl tape1({1, 3, 5}, "test_merge_tape_1", {});
+        tape_impl tape2({2, 4, 6}, "test_merge_tape_2", {});
 
         std::vector<int> expect = {1, 2};
         auto out = tape_sorter->merge(&tape1, &tape2);
@@ -86,16 +100,17 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
     }
 
     BOOST_AUTO_TEST_CASE(TestTapeSorterSplitsCorrectly) {
-        std::vector<int> input = {1, 2, 3, 4, 5, 6};
+        std::vector<int> input = {1, 2, 3, 4, 5, 6, 7};
         tape_impl tape(
                 input,
                 "test_split_tape",
-                tape_impl::configuration({}, {}, {})
+                {}
         );
         auto res = tape_sorter->split(&tape);
         int i = 0;
         for (auto r: *res) {
             while (!r->ended()) {
+                BOOST_CHECK_NE(i, input.size());
                 BOOST_CHECK_EQUAL(r->value(), input[i++]);
                 r->right();
             }
@@ -111,6 +126,7 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
             BOOST_CHECK_EQUAL(res->value(), v);
             res->right();
         }
+        res->clean();
     }
 
 BOOST_AUTO_TEST_SUITE_END();

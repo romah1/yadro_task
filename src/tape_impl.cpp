@@ -12,7 +12,7 @@
 
 tape_impl::tape_impl(const std::string &file_name) : tape_impl(
         file_name,
-        configuration({}, {}, {})
+        {}
 ) {}
 
 tape_impl::tape_impl(const std::string &file_name, configuration conf)
@@ -46,6 +46,8 @@ tape_impl::tape_impl(const std::vector<int> &elems, const std::string &file_name
     rewind();
     if (!elems.empty()) {
         right_();
+    } else {
+        fin_.get();
     }
 }
 
@@ -114,6 +116,9 @@ void tape_impl::right_() {
 }
 
 void tape_impl::append_right(int value) {
+    if (fin_.eof()) {
+        fin_.clear(std::iostream::goodbit);
+    }
     fin_ << value << ',';
     fin_.flush();
     cur_value = std::make_optional(value);
@@ -203,7 +208,7 @@ void tape_impl::write(int value) {
 }
 
 void tape_impl::rewind() {
-    fin_.clear();
+    fin_.clear(std::iostream::goodbit);
     fin_.seekg(0, std::iostream::beg);
     fin_.seekp(0, std::iostream::beg);
 }

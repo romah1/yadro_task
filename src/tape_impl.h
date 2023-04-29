@@ -24,6 +24,8 @@ public:
                 std::chrono::seconds write_delay,
                 std::chrono::seconds move_delay
         ) : read_delay(read_delay), write_delay(write_delay), move_delay(move_delay) {}
+
+        configuration() : read_delay({}), write_delay({}), move_delay({}) {}
     };
 
     explicit tape_impl(const std::string &file_name);

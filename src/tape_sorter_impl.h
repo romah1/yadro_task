@@ -13,7 +13,7 @@ class tape_sorter_impl : public tape_sorter<int> {
 public:
     explicit tape_sorter_impl(unsigned int batch_size, tape_impl::configuration conf);
 
-    tape<int> *sort(tape<int> *t) override;
+    tape_impl *sort(tape<int> *t) override;
 
     tape_impl *merge(tape_impl *lhs, tape_impl *rhs);
 
