@@ -11,7 +11,8 @@ class tape_factory {
 public:
     tape_factory(tape_impl::configuration conf);
 
-    tape_impl* create(const std::vector<int> &elems);
+    tape_impl *create(const std::vector<int> &elems);
+
 private:
     int tape_id_ = 0;
     tape_impl::configuration conf_;

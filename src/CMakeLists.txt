@@ -1,5 +1,5 @@
-add_library (Tape tape_impl.cpp tape_impl.h tape.h tape_sorter.h tape_sorter_impl.cpp tape_sorter_impl.h tape_factory.cpp tape_factory.h)
-add_executable (tape main.cpp)
+add_library(Tape tape_impl.cpp tape_impl.h tape.h tape_sorter.h tape_sorter_impl.cpp tape_sorter_impl.h tape_factory.cpp tape_factory.h)
+add_executable(tape main.cpp)
 configure_file(main_conf.in ${CMAKE_CURRENT_BINARY_DIR}/main_conf.in COPYONLY)
 configure_file(main_tape.in ${CMAKE_CURRENT_BINARY_DIR}/main_tape.in COPYONLY)
-target_link_libraries (tape Tape)
+target_link_libraries(tape Tape)
