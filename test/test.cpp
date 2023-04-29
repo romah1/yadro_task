@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_SUITE(test_tape, tape_fixture);
     }
 
     BOOST_AUTO_TEST_CASE(TestTapeSorterSortsCorrectly) {
-        auto res = tape_sorter->sort(tape);
+        auto res = tape_sorter->sort(tape, "TestTapeSorterSortsCorrectlyOut");
         std::sort(input.begin(), input.end());
         for (auto v: input) {
             BOOST_CHECK_EQUAL(res->value(), v);

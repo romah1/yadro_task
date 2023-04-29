@@ -13,11 +13,11 @@ public:
 
     tape_impl *create(const std::vector<int> &elems);
 
+    std::string next_tape_name();
+
 private:
     int tape_id_ = 0;
     tape_impl::configuration conf_;
-
-    std::string next_tape_name();
 };
 
 

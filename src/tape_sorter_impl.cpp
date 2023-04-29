@@ -11,9 +11,9 @@
 tape_sorter_impl::tape_sorter_impl(
         unsigned int batch_size,
         tape_impl::configuration conf
-) : batch_size_(batch_size), tape_factory_(conf) {}
+) : batch_size_(batch_size), tape_factory_(conf), conf_(conf) {}
 
-tape_impl *tape_sorter_impl::sort(tape<int> *t) {
+tape_impl *tape_sorter_impl::sort(tape<int> *t, const std::string &out_tape_filename) {
     auto temp_tapes = split(t);
 
     while (temp_tapes->size() > 1) {
@@ -32,8 +32,16 @@ tape_impl *tape_sorter_impl::sort(tape<int> *t) {
         }
         temp_tapes = new_temp_tapes;
     }
-
-    return temp_tapes->at(0);
+    auto temp_result = temp_tapes->at(0);
+    auto result = new tape_impl({}, out_tape_filename, conf_);
+    while (!temp_result->ended()) {
+        result->append_right(temp_result->value());
+        temp_result->right();
+    }
+    temp_result->clean();
+    result->rewind();
+    result->right();
+    return result;
 }
 
 std::vector<tape_impl *> *tape_sorter_impl::split(tape<int> *t) {
