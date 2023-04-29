@@ -107,7 +107,6 @@ void tape_impl::right_() {
         throw tape_exception("trying to move tape at max pos to the right");
     }
     if (!has_right()) {
-//        throw tape_exception("trying to move tape at max pos to the right");
         fin_.get();
         return;
     }
